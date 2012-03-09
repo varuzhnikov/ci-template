@@ -1,0 +1,50 @@
+<project name="CITemplate" default="integration" xmlns="">
+    <property name="project.name" value="CITemplate"/>
+    <!-- Value 'continuous.integration.server' defined in the Hudson project configuration -->
+    <property name="executable.name" value="CITemplate"/>
+  
+    <property name="unit-tests.executable.name" value="CITests"/>
+  
+    <property name="build.configuration" value="Debug"/>
+    <property name="test.build.configuration" value="Debug"/>
+    <property name="platform" value="iphoneos"/>
+    <property name="project.dir" value="${basedir}"/>
+    <property name="build.dir" value="${project.dir}/build"/>
+    <property name="provisioning.profile" value="${project.dir}/XP_Party.mobileprovision"/>
+    <property name="sign.certificate" value="iPhone Distribution: Flexis ZAO"/>
+    
+    <property name="iphone.simulator" value="iphonesimulator5.0"/>
+    
+    <!-- Value SVN_REVISION defined by the Hudson -->    
+    <property name="app.version" value="0.17.1"/>
+
+
+    <target name="integration" depends="unit-tests,build,build-ipa"/>
+
+
+    <target name="build">
+		<!-- <exec executable="sh" failonerror="true">
+			<arg line='increaseVersion.sh ${build.number}'/>
+		</exec> -->
+
+        <exec executable="xcodebuild" dir="${project.dir}" failonerror="true">
+            <arg line="-target ${executable.name} -configuration ${build.configuration} clean build"/>
+        </exec>
+    </target>
+
+
+    <target name="unit-tests">
+        <exec executable="xcodebuild" dir="${project.dir}" failonerror="true">
+            <arg line="-target ${unit-tests.executable.name} -configuration ${test.build.configuration} -sdk ${iphone.simulator} clean build" />
+        </exec>
+    </target>
+
+    <target name="build-ipa">
+
+        <exec executable="/usr/bin/xcrun" dir="${project.dir}" failonerror="true">
+            <arg line='-sdk iphoneos PackageApplication -v "${build.dir}/${build.configuration}-iphoneos/${project.name}.app" -o "${build.dir}/${project.name}.ipa" --sign "${sign.certificate}" --embed "${provisioning.profile}"' />
+        </exec>
+    </target>
+
+
+</project>
